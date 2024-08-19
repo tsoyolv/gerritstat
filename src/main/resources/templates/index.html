@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Report</title>
+</head>
+<body>
+<form th:action="@{/report}" th:object="${request}" method="post">
+    <input type="text" th:field="*{user}" placeholder="Пользователь" />
+    <input type="date" th:field="*{fromDate}" placeholder="Дата от" />
+    <input type="date" th:field="*{toDate}" placeholder="Дата до" />
+    <input type="text" th:field="*{cookie}" placeholder="Cookie" />
+    <button type="submit">Получить отчет</button>
+</form>
+</body>
+</html>

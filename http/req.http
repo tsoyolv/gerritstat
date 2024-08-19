@@ -1,0 +1,6 @@
+###
+# curl 'https://host.com/changes/?O=1000081&S=0&n=25&q=%20status%3AMerged%20%28o%3AMoiseenko%29'
+#  -H 'Cookie: cookie
+GET https://host.com/changes/?O=1000081&S=25&n=25&q=%20status%3AMerged%20%28o%3AMoiseenko%29
+Cookie: cookie
+

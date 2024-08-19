@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Отчет </title>
+</head>
+<body>
+<h2>Отчёт для пользователя <span th:text="${request.user}"></span></h2>
+<h3>Период: с <span th:text="${request.fromDate}"></span> по <span th:text="${request.toDate}"></span></h3>
+
+<table>
+    <tr>
+        <th>Всего ченджей</th>
+        <th>XS ченджей</th>
+        <th>S ченджей</th>
+        <th>M ченджей</th>
+        <th>L ченджей</th>
+        <th>XL ченджей</th>
+        <th>Всего строк кода добавлено</th>
+        <th>Всего строк кода удалено</th>
+        <th>Всего комментариев</th>
+        <th>XS среднее время закрытия</th>
+        <th>S среднее время закрытия</th>
+        <th>M среднее время закрытия</th>
+        <th>L среднее время закрытия</th>
+        <th>XL среднее время закрытия</th>
+    </tr>
+    <tr>
+        <td th:text="${report.totalChanges}"></td>
+        <td th:text="${report.xsCount}"></td>
+        <td th:text="${report.sCount}"></td>
+        <td th:text="${report.mCount}"></td>
+        <td th:text="${report.lCount}"></td>
+        <td th:text="${report.xlCount}"></td>
+        <td th:text="${report.totalLinesAdded}"></td>
+        <td th:text="${report.totalLinesRemoved}"></td>
+        <td th:text="${report.totalComments}"></td>
+        <td th:text="${report.xsAverageClosureTime}"></td>
+        <td th:text="${report.sAverageClosureTime}"></td>
+        <td th:text="${report.mAverageClosureTime}"></td>
+        <td th:text="${report.lAverageClosureTime}"></td>
+        <td th:text="${report.xlAverageClosureTime}"></td>
+    </tr>
+</table>
+</body>
+</html>
