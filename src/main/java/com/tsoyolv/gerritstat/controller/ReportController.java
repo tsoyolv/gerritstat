@@ -5,6 +5,7 @@ import com.tsoyolv.gerritstat.service.ChangeService;
 import com.tsoyolv.gerritstat.service.ReportService;
 import com.tsoyolv.gerritstat.service.model.ChangeSet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,9 @@ public class ReportController {
     public ReportRequest defaultReportRequest() {
         return new ReportRequest();
     }
+
+    @Value("${gerrit.user.url}")
+    private String url;
 
 
     @GetMapping("/")
@@ -47,6 +51,7 @@ public class ReportController {
         List<ChangeSet> changes = changeService.getChangesForUser(userId, request.getCookie(), request.getFromDate(), request.getToDate());
         model.addAttribute("request", request);
         model.addAttribute("userId", userId);
+        model.addAttribute("userLink", url + userId + ")");
         model.addAttribute("changes", changes);
         return "userChanges";
     }

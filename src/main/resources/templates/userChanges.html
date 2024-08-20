@@ -15,7 +15,7 @@
     </style>
 </head>
 <body>
-<h2>Отчёт по: <span th:text="${userId}"></span></h2>
+<h2>Отчёт по: <a th:href="@{${userLink}}" th:text="${userId}">Ссылка</a></h2>
 <h3>Период: с <span th:text="${request.fromDate}"></span> по <span th:text="${request.toDate}"></span></h3>
 
 <table>
@@ -37,8 +37,8 @@
             <td><a th:href="@{${change.link}}" th:text="${change.linkName}">Ссылка</a></td>
             <td th:text="${change.name}"></td>
             <td th:text="${change.size}"></td>
-            <td th:text="${change.createDate}"></td>
-            <td th:text="${change.closeDate}"></td>
+            <td th:text="${#temporals.format(change.createDate, 'HH:mm, d MMMM yyyy')}"></td>
+            <td th:text="${#temporals.format(change.closeDate, 'HH:mm, d MMMM yyyy')}"></td>
             <td th:text="${change.totalLinesAdded}"></td>
             <td th:text="${change.totalLinesRemoved}"></td>
             <td th:text="${change.totalComments}"></td>
