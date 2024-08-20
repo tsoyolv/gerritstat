@@ -2,6 +2,8 @@ package com.tsoyolv.gerritstat.service.model;
 
 public class Report {
 
+    private String user;
+    private String link;
     private int volume;
     private int totalChanges;
     private int xsCount;
@@ -17,6 +19,22 @@ public class Report {
     private String mAverageClosureTime;
     private String lAverageClosureTime;
     private String xlAverageClosureTime;
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
 
     public int getVolume() {
         return volume;

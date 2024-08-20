@@ -1,6 +1,7 @@
 package com.tsoyolv.gerritstat.controller.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ReportRequest {
     private String user;

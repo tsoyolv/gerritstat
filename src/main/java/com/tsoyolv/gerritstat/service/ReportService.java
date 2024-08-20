@@ -4,6 +4,7 @@ import com.tsoyolv.gerritstat.controller.dto.ReportRequest;
 import com.tsoyolv.gerritstat.port.output.rest.GerritRestClient;
 import com.tsoyolv.gerritstat.port.output.rest.dto.ChangesetResponse;
 import com.tsoyolv.gerritstat.service.model.Report;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -15,13 +16,22 @@ public class ReportService {
 
     private final GerritRestClient restClient;
 
+    @Value("${gerrit.user.url}")
+    private String url;
+
     public ReportService(GerritRestClient restClient) {
         this.restClient = restClient;
     }
 
-    public Report generateReport(ReportRequest request) {
+    public List<Report> generateReport(List<String> userList, ReportRequest request) {
+        return userList
+                .stream()
+                .map(u -> getReport(u, request))
+                .collect(Collectors.toList());
+    }
 
-        var changeSets = restClient.getChangeSets(request.getUser(), request.getCookie(), request.getFromDate());
+    private Report getReport(String user, ReportRequest request) {
+        var changeSets = restClient.getChangeSets(user, request.getCookie(), request.getFromDate());
         changeSets = changeSets.stream()
                 .filter(
                         c -> !c.getSubmitted().toLocalDate().isBefore(request.getFromDate()) &&
@@ -29,7 +39,10 @@ public class ReportService {
                 .collect(Collectors.toList());
         System.out.println();
 
-        return mapToReport(changeSets);
+        Report report = mapToReport(changeSets);
+        report.setUser(user);
+        report.setLink(url + user + ")");
+        return report;
     }
 
     private static Report mapToReport(List<ChangesetResponse> changeSets) {
