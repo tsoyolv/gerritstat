@@ -79,6 +79,13 @@ public class ReportService {
                 }
             }
         }
+        report.setVolume(
+                report.getXsCount()
+                        + report.getsCount() * 2
+                        + report.getmCount() * 3
+                        + report.getlCount() * 6
+                        + report.getXlCount() * 10
+        );
         Duration temp;
         if (durs.xs != null) {
             temp = durs.xs.dividedBy(report.getXsCount());

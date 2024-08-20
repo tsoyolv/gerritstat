@@ -2,6 +2,7 @@ package com.tsoyolv.gerritstat.service.model;
 
 public class Report {
 
+    private int volume;
     private int totalChanges;
     private int xsCount;
     private int sCount;
@@ -16,6 +17,14 @@ public class Report {
     private String mAverageClosureTime;
     private String lAverageClosureTime;
     private String xlAverageClosureTime;
+
+    public int getVolume() {
+        return volume;
+    }
+
+    public void setVolume(int volume) {
+        this.volume = volume;
+    }
 
     public int getTotalChanges() {
         return totalChanges;

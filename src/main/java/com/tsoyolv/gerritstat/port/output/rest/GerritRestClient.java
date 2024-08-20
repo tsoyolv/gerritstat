@@ -46,7 +46,7 @@ public class GerritRestClient {
             List<ChangesetResponse> items = requestChangeSets(userName, cookie, offset, COUNT);
             ChangesetResponse last = items.get(items.size() - 1);
             allItems.addAll(items);
-            if (last.getSubmitted().toLocalDate().isBefore(from)) {
+            if (last.getUpdated().toLocalDate().isBefore(from)) {
                 break;
             }
             offset += COUNT;

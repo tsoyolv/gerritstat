@@ -9,6 +9,7 @@
 
 <table>
     <tr>
+        <th>Объем</th>
         <th>Всего ченджей</th>
         <th>XS ченджей</th>
         <th>S ченджей</th>
@@ -25,6 +26,7 @@
         <th>XL среднее время закрытия</th>
     </tr>
     <tr>
+        <td th:text="${report.volume}"></td>
         <td th:text="${report.totalChanges}"></td>
         <td th:text="${report.xsCount}"></td>
         <td th:text="${report.sCount}"></td>
