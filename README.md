@@ -1,35 +1,35 @@
 # gerritstat
 
-Небольшое веб-приложение для отчётов по изменениям в Gerrit. Выбираете авторов и период — получаете сводку по влитым изменениям: количество, размер, строки кода, комментарии и среднее время от создания до слияния. Из сводки можно перейти к списку изменений каждого автора и открыть их в Gerrit.
+A small web app for reporting on Gerrit changes. Select authors and a date range to see their merged changes, diff sizes, lines added and removed, comments, and average time to merge. Drill down into each author's changes and open them directly in Gerrit.
 
-**Стек:** Java 17 · Spring Boot 3.3.2 · Thymeleaf · Gradle 8.8.
+**Built with:** Java 17 · Spring Boot 3.3.2 · Thymeleaf · Gradle 8.8.
 
-## Что есть в отчёте
+## Features
 
-- Несколько авторов в одной таблице.
-- Только изменения со статусом `MERGED`, отобранные по дате слияния.
-- Количество изменений по размерам: XS, S, M, L и XL.
-- Суммарное число добавленных и удалённых строк, а также комментариев к изменениям.
-- Среднее время от создания до слияния отдельно для каждого размера.
-- Условный «объём» изменений с весами от 1 до 10.
-- Детализация по автору: название, размер, даты, строки, комментарии и ссылка на change. Самые поздние слияния идут первыми.
+- Compare multiple authors in a single report.
+- Include only `MERGED` changes, filtered by merge date.
+- Group changes by size: XS, S, M, L, and XL.
+- See totals for added lines, removed lines, and comments on changes.
+- Track average time from creation to merge for each size category.
+- Calculate a weighted change volume using weights from 1 to 10.
+- Browse each author's changes with titles, sizes, dates, line counts, comments, and Gerrit links, sorted by merge date, newest first.
 
-База данных не нужна: приложение запрашивает данные напрямую через Gerrit REST API. Интерфейс на русском языке.
+No database is required: the app fetches data directly from the Gerrit REST API. The web interface is currently in Russian.
 
-## Быстрый запуск
+## Quick start
 
-Понадобятся **JDK 17**, Git и доступ к вашему Gerrit. Gradle устанавливать отдельно не нужно: в репозитории есть Wrapper. При первом запуске он скачает Gradle и зависимости, поэтому потребуется доступ к интернету.
+You need **JDK 17**, Git, and access to your Gerrit instance. The repository includes the Gradle Wrapper, so there is no need to install Gradle separately. The first run requires internet access to download Gradle and dependencies.
 
-### 1. Склонируйте репозиторий
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/tsoyolv/gerritstat.git
 cd gerritstat
 ```
 
-### 2. Укажите адреса Gerrit
+### 2. Configure Gerrit URLs
 
-Пример для Bash/Zsh — замените `gerrit.example.com` своим адресом:
+For Bash/Zsh, replace `gerrit.example.com` with your Gerrit host:
 
 ```bash
 export GERRIT_HOST_URL='https://gerrit.example.com/changes/?O=1000081'
@@ -37,110 +37,112 @@ export GERRIT_USER_URL='https://gerrit.example.com/q/status:Merged+(o:'
 export GERRIT_CHANGE_URL='https://gerrit.example.com/c/'
 ```
 
-| Переменная окружения | Свойство Spring | Для чего нужно |
+| Environment variable | Spring property | Purpose |
 | --- | --- | --- |
-| `GERRIT_HOST_URL` | `gerrit.host.url` | Начало URL запроса к REST API. Клиент дописывает `&S=…&n=…&q=…`, поэтому адрес уже должен содержать `/changes/` и начало query string. |
-| `GERRIT_USER_URL` | `gerrit.user.url` | Начало ссылки на поиск изменений автора в Gerrit. Приложение добавляет идентификатор автора и закрывающую `)`. |
-| `GERRIT_CHANGE_URL` | `gerrit.change.url` | Начало ссылки на отдельный change. Приложение добавляет `<project>/+/<number>`, поэтому завершающий `/` обязателен. |
+| `GERRIT_HOST_URL` | `gerrit.host.url` | REST API request URL prefix. The client appends `&S=…&n=…&q=…`, so this must include `/changes/` and an initial query parameter. |
+| `GERRIT_USER_URL` | `gerrit.user.url` | URL prefix for an author's change search in Gerrit. The app appends the author identifier and a closing `)`. |
+| `GERRIT_CHANGE_URL` | `gerrit.change.url` | URL prefix for individual changes. The app appends `<project>/+/<number>`, so the trailing `/` is required. |
 
-Если Gerrit размещён под дополнительным путём, например `https://example.com/gerrit`, включите `/gerrit` во все три адреса.
+If Gerrit is hosted under a path such as `https://example.com/gerrit`, include `/gerrit` in all three URLs.
 
-Адреса также можно задать в [`src/main/resources/application.properties`](src/main/resources/application.properties). Значения в репозитории — заглушки: перед подключением нужно заменить все три.
+You can also set these properties in [`src/main/resources/application.properties`](src/main/resources/application.properties). The values committed to the repository are placeholders; replace all three before connecting.
 
-### 3. Запустите приложение
+### 3. Start the app
 
 ```bash
 ./gradlew bootRun --args='--server.address=127.0.0.1'
 ```
 
-Откройте [http://localhost:8080](http://localhost:8080).
+Open [http://localhost:8080](http://localhost:8080).
 
-На Windows задайте те же переменные окружения и используйте `gradlew.bat` вместо `./gradlew`.
+On Windows, set the same environment variables and use `gradlew.bat` instead of `./gradlew`.
 
-Пример привязывает приложение к локальному интерфейсу. В приложении нет собственной авторизации, а поле Cookie отображается обычным текстом; используйте его локально или в защищённом окружении. Cookie даёт доступ к вашей сессии Gerrit — не сохраняйте его в репозитории и не включайте в скриншоты.
+This example binds the app to the loopback interface. The app has no authentication of its own, and the Cookie field displays its value as plain text. Run it locally or in a protected environment. Your Cookie grants access to your Gerrit session; keep it out of commits and screenshots.
 
-## Как получить отчёт
+## Generate a report
 
-1. В поле **«Пользователь»** укажите идентификатор, который Gerrit понимает в поиске `owner:` / `o:`. Для нескольких авторов используйте запятые: `alice,bob`.
-2. Выберите **«Дата от»** и **«Дата до»**. Обе границы включены; учитывается дата `submitted` — когда изменение было влито, даже если создано оно раньше.
-3. В поле **Cookie** вставьте значение заголовка `Cookie` из авторизованного запроса к вашему Gerrit, без префикса `Cookie:`. Его можно посмотреть в инструментах разработчика браузера: **Network → запрос к Gerrit → Request Headers → Cookie**. Для анонимно доступного API поле можно оставить пустым.
-4. Нажмите **«Получить отчет»**.
-5. Нажмите на автора в таблице, чтобы увидеть его изменения за выбранный период. В детализации номер изменения ведёт на его страницу в Gerrit.
+The labels below match the current Russian interface:
 
-Авторизация в API выполняется переданным Cookie. Отдельных настроек для API-токена или логина с паролем сейчас нет.
+1. In **User** (`Пользователь`), enter an identifier accepted by Gerrit's `owner:` / `o:` search operator. Separate multiple authors with commas: `alice,bob`.
+2. Select **From date** (`Дата от`) and **To date** (`Дата до`). Both boundaries are inclusive. Filtering uses `submitted`, the date a change was merged, even if it was created before the selected period.
+3. In **Cookie**, paste the value of the `Cookie` header from an authenticated request to your Gerrit instance, without the `Cookie:` prefix. Find it in your browser's developer tools under **Network → a Gerrit request → Request Headers → Cookie**. You can leave this field empty if the API allows anonymous access.
+4. Click **Generate report** (`Получить отчет`).
+5. Click an author in the report to view their changes for the selected period. In the detail view, each change number links to its page in Gerrit.
 
-## Как считаются метрики
+The app authenticates API requests using the supplied Cookie. There are currently no separate settings for API tokens or username/password authentication.
 
-### Размер изменения
+## Metric definitions
 
-Размер определяется суммой добавленных и удалённых строк:
+### Change size
+
+A change's size is the sum of its added and removed lines:
 
 ```text
 size = insertions + deletions
 ```
 
-| Размер | Число строк | Вес в «объёме» |
+| Size | Lines changed | Volume weight |
 | --- | ---: | ---: |
 | XS | 0–9 | 1 |
 | S | 10–49 | 2 |
 | M | 50–249 | 3 |
 | L | 250–999 | 6 |
-| XL | 1 000 и больше | 10 |
+| XL | 1,000 or more | 10 |
 
-Например, изменение с 30 добавленными и 25 удалёнными строками относится к M: его размер — 55 строк.
+For example, a change with 30 added and 25 removed lines has a size of 55 lines and falls into category M.
 
-### Объём
+### Volume
 
 ```text
 volume = XS × 1 + S × 2 + M × 3 + L × 6 + XL × 10
 ```
 
-Здесь XS–XL — количество изменений соответствующего размера. Это условный показатель по размеру diff; он не измеряет сложность задачи, качество кода или ценность результата и сам по себе не подходит для оценки эффективности разработчика.
+Here, XS–XL are the number of changes in each size category. Volume is a rough measure based on diff size. It does not measure task complexity, code quality, or business value, and should not be used on its own to assess developer performance.
 
-### Время закрытия и комментарии
+### Time to merge and comments
 
-- **Среднее время закрытия** — среднее арифметическое `submitted − created` внутри каждой размерной группы. Это календарное время, включая ожидание и выходные. Если изменений такого размера нет, ячейка остаётся пустой.
-- **Всего комментариев** — сумма `total_comment_count` у выбранных изменений. Это комментарии **к изменениям автора**, а не число комментариев, написанных самим автором на ревью.
-- Даты обрабатываются как `LocalDateTime`, без пересчёта в часовой пояс браузера или пользователя.
+- **Average time to merge** is the arithmetic mean of `submitted − created` within each size category. It includes all elapsed time, including waiting and weekends. The cell is blank when a category has no changes.
+- **Total comments** is the sum of `total_comment_count` across the selected changes. It counts comments **on the author's changes**, not review comments written by that author.
+- Timestamps are handled as `LocalDateTime`, without conversion to the browser's or user's time zone.
 
-Расчёты находятся в [`ReportService.java`](src/main/java/com/tsoyolv/gerritstat/service/ReportService.java), классификация в детализации — в [`ChangeService.java`](src/main/java/com/tsoyolv/gerritstat/service/ChangeService.java).
+See [`ReportService.java`](src/main/java/com/tsoyolv/gerritstat/service/ReportService.java) for report calculations and [`ChangeService.java`](src/main/java/com/tsoyolv/gerritstat/service/ChangeService.java) for size classification in the detail view.
 
-## Сборка и тесты
+## Build and test
 
 ```bash
-# Запустить существующий тест загрузки Spring-контекста
+# Run the existing Spring context loading test
 ./gradlew test
 
-# Собрать исполняемый JAR
+# Build an executable JAR
 ./gradlew bootJar
 
-# Запустить JAR с переменными окружения из раздела выше
+# Run the JAR with the environment variables configured above
 java -jar build/libs/gerritstat-0.0.1-SNAPSHOT.jar --server.address=127.0.0.1
 ```
 
-Для другого порта добавьте `--server.port=8081`. При запуске через Gradle оба параметра передаются внутри `--args`:
+To use a different port, add `--server.port=8081`. With Gradle, pass both options through `--args`:
 
 ```bash
 ./gradlew bootRun --args='--server.address=127.0.0.1 --server.port=8081'
 ```
 
-В репозитории есть один тест загрузки контекста; расчёты метрик и интеграция с Gerrit отдельными тестами пока не покрыты.
+The repository contains one context loading test. Metric calculations and the Gerrit integration do not yet have dedicated tests.
 
-## Ограничения и частые проблемы
+## Known limitations and troubleshooting
 
-- **Нет обработки пустой страницы API.** Клиент читает по 25 изменений и останавливается, когда дата `updated` последнего элемента страницы раньше начала периода. Если Gerrit вернёт пустой список раньше этого условия — например, у автора нет merged-изменений или выбран период, охватывающий всю его историю, — запрос может завершиться ошибкой. Поле `_more_changes` сейчас не используется для остановки.
-- **Длинные периоды могут загружаться медленно.** Авторы и страницы обрабатываются последовательно, без кэша; при открытии детализации данные запрашиваются заново.
-- **Форма не проверяет корректность периода.** Заполните автора и обе даты, убедитесь, что начало не позже конца. Ошибки API не преобразуются в понятные сообщения в интерфейсе.
-- **Ответы `401` / `403`.** Проверьте доступ к Gerrit и актуальность Cookie. Если вход проходит через SSO, для запроса могут понадобиться несколько cookie из исходного заголовка.
-- **Ошибка URL или разбора JSON.** Проверьте `GERRIT_HOST_URL`: нужен адрес REST API из примера выше. HTML-страница входа или главная страница Gerrit не подходят. Парсер дат ожидает формат `yyyy-MM-dd HH:mm:ss.SSSSSSSSS`.
-- **Gradle не находит Java 17.** Сборка требует toolchain JDK 17. Установите его и при необходимости укажите его каталог через `JAVA_HOME`; одной установленной JDK 21 недостаточно для текущей конфигурации сборки.
+- **Empty API pages are not handled.** The client fetches 25 changes per page and stops when the last item's `updated` date is earlier than the report's start date. If Gerrit returns an empty list first, the request can fail. This can happen when an author has no merged changes or the selected period covers their entire history. The client does not currently use `_more_changes` to detect the end of the results.
+- **Long date ranges can be slow.** Authors and pages are processed sequentially, without caching. Opening an author's detail view fetches the data again.
+- **The form does not validate the date range.** Fill in the author and both dates, and make sure the start date is not after the end date. API failures are not translated into helpful messages in the UI.
+- **`401` / `403` responses.** Check your access to Gerrit and whether your Cookie has expired. With SSO, you may need multiple cookies from the original request header.
+- **URL or JSON parsing errors.** Check `GERRIT_HOST_URL`: it must point to the REST API endpoint shown above. A login page or the Gerrit home page will not work. The timestamp parser expects `yyyy-MM-dd HH:mm:ss.SSSSSSSSS`.
+- **Gradle cannot find Java 17.** The build requires a JDK 17 toolchain. Install it and, if needed, point `JAVA_HOME` to its directory. Having only JDK 21 installed is not sufficient for the current build configuration.
 
-## Навигация по коду
+## Code map
 
-| Где | Что находится |
+| Location | Responsibility |
 | --- | --- |
-| [`controller/`](src/main/java/com/tsoyolv/gerritstat/controller) | Форма, построение отчёта и страница изменений автора. |
-| [`service/`](src/main/java/com/tsoyolv/gerritstat/service) | Фильтрация периода, расчёт метрик и подготовка детализации. |
-| [`port/output/rest/`](src/main/java/com/tsoyolv/gerritstat/port/output/rest) | Запросы к Gerrit, пагинация и разбор ответов. |
-| [`templates/`](src/main/resources/templates) | HTML-страницы Thymeleaf. |
-| [`application.properties`](src/main/resources/application.properties) | Настройки приложения и адреса Gerrit. |
+| [`controller/`](src/main/java/com/tsoyolv/gerritstat/controller) | Report form, report generation endpoint, and author detail page. |
+| [`service/`](src/main/java/com/tsoyolv/gerritstat/service) | Date filtering, metric calculations, and change detail mapping. |
+| [`port/output/rest/`](src/main/java/com/tsoyolv/gerritstat/port/output/rest) | Gerrit requests, pagination, and response parsing. |
+| [`templates/`](src/main/resources/templates) | Thymeleaf HTML pages. |
+| [`application.properties`](src/main/resources/application.properties) | Application settings and Gerrit URLs. |
